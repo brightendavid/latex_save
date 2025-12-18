@@ -1,0 +1,276 @@
+\documentclass[10pt]{article}
+\usepackage[CHN]{iscv}
+\usepackage{capt-of}
+\usepackage{hologo}
+\bibliographystyle{ieeetr}
+
+\title{图像标题生成综述}
+\author{宋佳维}
+\setcounter{page}{1}
+
+\begin{document}
+
+% \twocolumn[{%
+% \maketitle
+% \begin{center}
+%     \centering
+%     \includegraphics[width=.9\linewidth,height=4cm]{example-image-golden}
+%     \captionof{figure}{Teaser Image}
+% \end{center}%
+% }]
+\maketitle
+
+\abstract
+图像标题生成是一个应用于提取图像基本信息，以自然语言形式为输出，以静态图像为输入的研究领域，更准确的，应当称之为图像内容描述技术。其中，主要可以分为传统方法和基于深度学习的方法。本文系统回顾已有的主要方法，基于这些方法提出了一套全面的分类体系，并对这些方法进行了深入的分析。同时，本文梳理了这个领域中常用的数据集和主要性能评估指标，总结了现有方法在物体幻觉、背景缺失、上下文理解不足等方面存在的核心挑战。最后，本文提出了对本领域的未来展望和总结。
+
+\keywords 多模态，综述，数据集，深度学习，文本生成
+
+\section{导论}
+图像内容描述技术是一个极具挑战的工作，作为计算机视觉领域和自然语言处理领域的桥梁，是如文生图技术、图像检索等多模态任务的上游技术。这项工作具有非常重要的作用，例如图像或视频库中的快速检索，视障人群认识和理解世界，帮助机器智能跨越图像-文本的语义鸿沟等。
+
+图像内容描述任务对于语义识别任务是下游任务，只有分辨了图像中的各个主体，主体所处的背景才能够进行下一步工作。对于图像内容描述任务，并不需要最终结果具有相当高的文学性，相反，需要对图像内容进行写实性的叙述，陈述图像中各个主体之间的关系，分辨一个物体在图像中属于前景或是背景，不缺项漏项。
+同时，图像内容描述领域中，也存在问题本身的多解性问题，即一个既定的图片可能存在多种合理的解读方式，以及人工标注图像语义过程中的主观性和随意性问题。这些问题都有待后续解决。
+
+其中，OCR(Optical Character Recognition)，光学字符识别是可以看做为图像内容描述的一个退化方向，虽然在表现形式和实现难度上具有很大的差别，但是在主要思想上是一致的。可以发现，OCR的技术发展和图像内容描述领域是高度一致的。
+
+图像内容描述技术主要可以分为传统方法、基于深度学习的方法，以及基于大模型的方法。其中，传统的图像内容描述方法，一般通过基于模版和人工设计规则的匹配对图像进行描述，解析图像内的对象，构建图像的语义，将图像语义匹配人工设计的特定规则。基于深度学习的方法，在一段时间中，部分人并不认为神经网络能够像人一样理解图像中不同为物体的复杂关系。\cite{Vinyals2014}首次将深度学习引入图像内容描述领域，使用CNN提取图像特征，并采用LSTM网络\cite{Song2019}作为解码器得到图像描述。近年来，一些基于大模型的方法，对于如何提取图像和文本特征进行了进一步的研究，其中\cite{Bianchi2021}作为一个多模态模型中一个出现较早的经典模型，经过4亿数据大样本的训练，提供了一个非常好用的文本-图像编码模块预训练模型，被广泛用于多模态任务的多种后续任务中。
+
+\section{OCR}
+和图像内容识别技术的发展过程相似，OCR技术也大致分为三个阶段：模式匹配阶段，特征工程阶段和深度学习阶段。由于OCR工作的相对简单性，早期的工作只需要进行图像-字形的简单匹配就可以得到一定的匹配准确率。
+
+模板匹配阶段（1960-1990）：依赖预设字符模板进行像素级比对，受限于字体、倾斜角度变化，仅适用于标准化票据场景。
+
+特征工程阶段（1990-2012）：引入HOG、SIFT等手工特征，结合SVM、随机森林等分类器，实现多字体、多语言支持，但需复杂特征工程。
+
+深度学习阶段（2012-至今）：CRNN（CNN+RNN+CTC）、Transformer等架构突破，通过海量数据训练实现端到端识别，支持复杂版面解析。
+
+在深度学习阶段，随着技术的发展和需求的多样化，OCR技术需要处理医疗领域中特殊符号转换，复杂版面解析等多种任务。可以发现，在广义上这和图像内容识别技术的核心步骤和基本思想是高度相关的。研究OCR技术，或许可以为图像内容识别领域的技术发展提供一些新的思路。
+
+\section{传统方法}
+传统的图像内容描述方法，一般通过基于模版和人工设计规则的匹配对图像进行描述。一般通过特征工程如SITF特征等获得图像特征，再通过一些人为设计模型获得图像的描述。\cite{b389343f08b34314ae257cae694352e6}提出了一个提取和抽象字幕生成模型，先通过SIFT算法得到图像特征，通过词袋模型和SVM算法获取各个词的排列概率，最终得到图像内容的描述。
+
+
+传统方法主要可以分为以下两类:
+\begin{itemize}
+    \item 基于检索的方法
+    \item 基于模版的方法
+\end{itemize}
+
+这类图像内容描述的传统方法通常借助相似图像的匹配，以及相似图像带有的图像描述，对输入图像的描述进行补充和修改，或直接将得到的描述词填入固定的几个句子模版中。虽然可以得到图像的合理描述，生成图像描述也符合一般的人类语法，但是这类方法高度依赖人工设计特征以及配套的图像-描述数据库，生成的句式内容也相对单一固定。
+
+\section{基于深度学习的方法}
+随着深度学习方法的兴起，以及深度神经网络在计算机视觉领域和自然语言处理领域的全面使用，基于深度学习解决图像内容描述问题成为一种趋势。神经网络在计算机视觉领域使用可以认为是对图像中像素和位置的编码和解码过程；而在自然语言处理中的使用则可以认为是对文本或语音的编解码。那么对于深度学习在图像内容描述领域中的应用只剩下编码后的图像特征和文本特征的融合和转换了。由于时序神经网络在自然语言处理领域这解码模块的广泛使用和优秀表现，LSTM\cite{Song2019}等时序神经网络在这项工作中的图像特征-文本特征转换过程中得到了广泛应用。
+\cite{Vinyals_2015_CVPR}使用CNN进行图像特征的提取，并使用LSTM网络进行解码，首次在图像内容识别领域中使用深度学习方法，提出了encode-decode框架。
+
+后续的一些工作如\cite{Xu2015}在encode-decode框架中加入注意力机制，\cite{Chen2017}在已有注意力机制的基础上加入通道注意力，在多个不同的地方使用注意力机制。\cite{Yao2018}使用GCN图卷积网络替换了原有的CNN编码模块，认为提取图像的显著区域得到显著的语言特征，再构建区域语义的有向图有助于增强网络对于图像中各主体关系的学习。
+
+这些方法在框架和基础结构上具有一定的相关性和时间上的递进关系，也证明了encode-decode结构对于图像内容描述任务是行之有效的。
+
+\section{基于预训练模型的方法}
+基于预训练模型的图像内容描述方法是一些多模态任务的一个必要模块，用于打破图像和文本的语义鸿沟。其中生成式任务和理解式任务是其中的两个重要方向，实际上这两个任务是互逆的。生成式任务是指通过一些提示词或是句子生成包含相应元素的图像；理解式任务就是图像内容描述任务，即解读图像语义信息，描述图像的内容。
+
+\cite{Zhou2020}基于BERT模型\cite{Alaparthi2020}进行修改，在预训练过程中，将文本和图像统一编码既可以完成生成式任务，又可以完成理解式任务。如图fig1所示，VLP算法使用共享的12层Tranformer层进行编码和解码。
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.6\textwidth]{figs/VLP.png}  % 调整宽度
+  \caption{VLP模型示意图}  % 添加标题
+  \label{fig:VLP}         % 添加标签
+\end{figure}
+
+CLIP\cite{pmlr-v139-radford21a}是由OpenAI公司开发的深度学习模型，可以作为多模态模型的一个出现较早的经典模型，经过4亿数据大样本的训练，提供了一个非常好用的文本-图像编码模块预训练模型。可以用于多模态任务的多种后续任务中。例如在Stable Diffusion\cite{Rombach2021}中作为文本的编码器应用。
+
+BLIP\cite{Li2022}认为图片的描述经过标注者的艺术处理，混入了图片中实际上并不存在的元素，这些元素可能是不在图片显示范围内，也可能是标注者臆想的一些元素。通过观察fig2，并考虑到图像内容描述任务的数据集多来自于网络，可以认为以往用于训练的图像-文本对确实存在上述问题。此外，作者创造性地提出了采用自举式(Bootstrapping)的训练方法，使得在训练迭代过程中可以通过标记器更新图像标注。同时，更新图像标注也能够带来更优的标记效果。自举式的训练不仅可以应用于这一单一方向，同时也可以应用于相当普遍的多个深度学习方向。
+但是，同时应当思考，这种自举式(Bootstrapping)的训练方法是否真的可以“左脚踩着右脚飞上天”呢？通过自己优化自己的方式必然是不可能最后将准确率提供到完美，这种方法的优化极限又在哪里？
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.6\textwidth]{figs/BLIP.png}  % 调整宽度
+  \caption{BLIP提出的数据集问题}  % 添加标题
+  \label{fig:BILP}         % 添加标签
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.6\textwidth]{figs/BILPMODEL.png}  % 调整宽度
+  \caption{BLIP模型}  % 添加标题
+  \label{fig:BILPmodel}         % 添加标签
+\end{figure}
+
+\section{数据集}
+
+一定程度上，图像内容识别任务是图像分类或是语义识别任务的扩展，可以通过相关数据集进行扩展，有很强的通用性，如果忽略背景的影响，只关注前景，确实可以直接作为图像内容识别的数据集使用。实际上，图像内容识别数据集仍旧处于数据不足，标注不清的问题。
+
+例如，\cite{Li2022}指出，很多数据集中的标注来源多样，标注随意，可能出现从一个影像中截取的图像，标注时混入了图像中不存在的或被遮挡的和影像上下文相关的信息；或是标注者在标注时加入了人为的艺术加工，臆想了一些不存在的元素。因此，训练时，不能完全信任数据集中的图像标注。
+在最新的工作中，使用了以下数据集。
+
+COCO数据集\cite{Lin2024}，本身就是语义识别/图像分类任务中一个权威的数据集，包含了目标点检测、关键点检测、实例分割、全景分割以及图片标注。COCO数据集在上述几个领域都是十分权威的,在现在的许多计算机视觉领域的前沿论文中依旧可以看到这个数据集。如图\ref{fig:coco}为COCO数据集的一些示例。
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.5\textwidth]{figs/coco.png}  % 调整宽度
+  \caption{coco数据集}  % 添加标题
+  \label{fig:coco}         % 添加标签
+\end{figure}
+
+Flickr30k数据集\cite{Plummer2016}是图像内容描述的经典数据集，由31,783张图像和158,915个文本注释组成，每张图像对应5条描述性文本。特殊的，通过标注框和参考语句中的短语元素相对应。对于每个图像和参考语句，短语和顶部匹配区域以相同的颜色显示。如图\ref{fig:Flickr30k}所示。
+
+\begin{figure*}[htbp]
+  \centering
+  \includegraphics[width=0.8\textwidth]{figs/Flickr30k.png}  % 调整宽度
+  \caption{Flickr30k数据集}  % 添加标题
+  \label{fig:Flickr30k}         % 添加标签
+\end{figure*}
+
+
+Visual Genome\cite{Krishna2017}该数据集为每个图像区域提供了单独的标题。该数据集包括七个部分：区域描述、对象边界框、属性、关系、区域图、场景图和问答对。Visual Genome数据集包含超过108k张图像，每张图像平均有35个对象、26个属性和21个对象之间的成对关系。该数据集将图像中的元素看做是组成图像整体的视觉基因，再通过特定动作将这些元素组合起来，相当于在标注时确立了一个规范，很大程度上避免了标注时的随意性问题，但是，由于这一套规范是基于目标检测的基本逻辑，似乎也缺失了对背景的描述。
+
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.5\textwidth]{figs/Visual Genome.png}  % 调整宽度
+  \caption{Visual Genome}  % 添加标题
+  \label{fig:Visual Genome}         % 添加标签
+\end{figure}
+
+
+
+\section{评估指标}
+
+\subsection{BLEU}
+BLEU (Bilingual Evaluation Understudy)双语评估替补\cite{papineni2002bleu},是一种经典的用于机器翻译，语音识别等以文本为输出的任务的评估指标，用于量化翻译或识别结果的质量。使用极简的语言表述就是，通过分别在测试结果Pred和数据标注GT之间1-n个连续子字符串的重合程度进行加权平均。
+
+具体的，当n=4时，分别计算n-gram的重合程度，即分别计算$1-gram,\texttt{2-gram},\texttt{3-gram},\texttt{4-gram}$的精确度。如~\eqref{eq:Precision}所示。
+
+\begin{equation}
+\label{eq:Precision}
+P{\tiny n} = \frac{匹配的\texttt{n-grams}数量}{\texttt{n-grams}在output中的总数} 
+\end{equation}
+
+BLEU最终的计算公式如下~\eqref{eq:BLEU}所示，物理意义为对$1-gram,2-gram,3-gram,4-gram$的精确度的加权求和。
+
+\begin{equation}
+\label{eq:BLEU}
+BLEU = \exp (\sum_{n=1}^{N} \omega_n P_n)
+\end{equation}
+
+其中，$\omega_n$表示$1-gram,2-gram,3-gram,4-gram$的加权系数；$P_n$表示$n-gram$的精确率。
+
+BLEU的应用范围非常广，具有自动化程度高，速度快，客观性强，且符合人类对于匹配度高的朴素认知，易于解释。但是也存在浮于表面，只关注字面意思，容易被近义词误导，导致意思正确但BLEU分数低的情况。对于诗歌场景和数据集较少的场景并不适用。
+
+\subsection{ROUGE}
+ROUGE(Recall-Oriented Understudy for Gisting Evaluation),召回导向的摘要评估。ROUGE主要关注召回率\text{Recall}~\eqref{eq:recall}。
+
+\begin{equation}
+\label{eq:recall}
+\text{Recall} = \frac{\text{TP}}{\text{TP} + \text{FN}}
+\end{equation}
+其中，$\text{TP} + \text{FN}$表示真正例(TP)+假负例(FN)，即所有正例的数量。
+ROUGE常见的变体还有
+\begin{itemize}
+    \item  ROUGE-N:基于 $n-gram$ 重叠的评价指标。
+    \item  ROUGE-L:基于最长公共子序列的评价指标。
+    \item  ROUGE-W:基于加权最长公共子序列的评价指标。
+    \item  ROUGE-S:跳跃$n-gram$ 评价指标，允许$n-gram$出现挑词，是 $ROUGE-N$的扩展。
+\end{itemize}
+其中，$ ROUGE-N$和$ROUGE-L$应用更加广泛。
+
+\subsection{METEOR}
+METEOR(Metric for Evaluation of Translation with Explicit ORdering)\cite{Lavie2009}是一种用于评估机器翻译输出质量的指标。和上述指标，BLEU和ROUGE，相比考虑到了语义、同义词、词序等更多方面的因素，通常被认为是一个相对全面的评价指标。为了实现上述功能，METEOR提出了三个模块。
+\begin{itemize}
+    \item  exact module,绝对模块，统计单词完全一致的次数。
+    \item  porter stem module，波特次干模块，基于波特次干算法计算词语变体的一致次数，如happy和happiness。
+    \item  WN synonymy module，WN同义词模块，基于WordNet词典匹配同义词的一致次数，如sunlight和sunshine。
+\end{itemize}
+通过上述三个模块，完成文本的对齐，即参考文本和生成文本的词匹配和匹配的次数。下一步，计算得到一个调和均值F参数~\eqref{eq:F}，其中，$\alpha$为调和系数，可以设置为1。
+
+\begin{equation}
+\label{eq:F}
+ \text F = \frac{(\alpha ^2+1)P}{\text R+\alpha \text P} 
+\end{equation}
+
+此外，特别的，需要计算惩罚因子$Penalty$，含义为对词序进行约束和惩罚。使用$chunk$块的概念，$chunk$表示匹配的数量，$chunk$数量越少，表示平均的长度越长，词序越正确，具体计算方法如下~\eqref{eq:Penalty}，其中unigrams-matched表示匹配的$1-gram$个数。
+
+\begin{equation}
+\label{eq:Penalty}
+\text Penalty = \gamma (\frac{\text chunks}{\text unigrams-matched} )^\theta 
+\end{equation}
+
+最后，$MENTEOR$的计算公式如下~\eqref{eq:MENTEOR}。
+
+\begin{equation}
+\label{eq:MENTEOR}
+\text MENTEOR = (1-\text Penalty)*\text F
+\end{equation}
+
+在实际使用中可以使用\text Python中的\text nltk库进行调用。\text MENTEOR方法在设计时考虑到了词序和同义词、变体等多种复杂情况，并使用平衡性F指标作为评估标准，同时考虑到了准确度$Precesion$指标和召回率$Recall$指标，评估更加全面。但同时，也存在对文本长度敏感，并极度依赖外部的文本库如用于同义词匹配的\text WordNet，对于词库中没有的单词无法进行自发性的判别。
+
+\subsection{CIDEr}
+
+CIDEr(Consensus-based Image Description Evaluation)\cite{Vedantam2014}是一种专为图像描述生成任务设计的自动评估指标，通过计算生成描述与参考描述之间的TF-IDF加权余弦相似度来衡量描述质量。
+对于任意文本的TF-IDF向量，定义为$g_n(S)$~\eqref{eq:gn},
+
+\begin{equation}
+\label{eq:gn}
+ g_n(S) = [\omega_s(g_1),\omega_s(g_2),...,\omega_s(g_n) ]
+\end{equation}
+
+其中，$\omega_s(g_n)$为$N-gram g_k$在文本$S$的TF-IDF权重，具体为~\eqref{eq:omga}，
+
+\begin{equation}
+\label{eq:omga}
+\omega_s(g_k) = TF(g_k,S).log \frac{m}{ {\textstyle \sum_{i=1}^{m}1(g_k \in R_i)} }
+\end{equation}
+
+其中，$ {\textstyle \sum_{i=1}^{m}1(g_k \in R_i)}$表示$N-gram g_k$在几个参考文本中出现。
+
+TF-IDF的主要思想为一个词语对一篇文档的重要性与其在该文档中出现的频率成正比，与其在整个文档集合中出现的频率成反比,在信息论中，IDF可以理解为一种信息增益的度量。一个词的IDF值越高，表示它在区分不同文档方面提供的信息量越大。而TF则反映了这个信息在当前文档中的重要程度。两者的结合使得TF-IDF能够有效地捕获文本的关键特征。具体计算方法如下~\eqref{eq:TF-IDF}
+
+
+\begin{equation}
+\label{eq:TF-IDF}
+\begin{aligned}
+&TF(t,d) = \frac{词t在文档d中出现次数}{文档d的总次数}\\
+&TDF(t,D)=\lg_{}{\frac{文档集合D中的文档数}{包含t的文档数+1}} \\
+&TF-IDF(t,d,D) = TF(t,d) * IDF(t,D)
+\end{aligned}
+\end{equation}
+
+下面，可以计算生成文本$C$和所有参考文本的子集的余弦相似度~\eqref{eq:sim}
+
+\begin{equation}
+\label{eq:sim}
+sim_n(C,R_i) = \frac{g_n(S)*g_n(R_i)}{||g_n(S)||*||g_n(R_i)||} 
+\end{equation}
+
+接下来，计算$CIDEr_n$意义为所有生成文本$C$和所有参考文本的子集的余弦相似度的平均值，其中，$m$表示参考文本的数量。
+
+\begin{equation}
+\label{eq:CIDEr_n}
+CIDEr_n(C,R) =\frac{1}{m}  \sum sim_n(C,R_i)
+\end{equation}
+
+最后，由$CIDEr_n$的加权平均值得到$CIDEr$，加权权重一般取$\omega _n=\frac{1}{N}$。具体计算方法如下，由计算方法可知，CIDEr评价方法参考了所有参考文本
+
+\begin{equation}
+\label{eq:CIDEr}
+CIDEr = \frac{1}{m} \sum_{n=1}^{N}\omega _n * CIDEr_n(C,R)
+\end{equation}
+
+
+
+\section{结论}
+
+本文对图像标题生成的基本情况，研究现状以及常用的数据集进行了全面的总结。创造性地提出了图像标题生成可以解释为图像内容描述，并提出了这一研究领域中存在的多解性现象。分析了图像标题生成的实际意义，创造性地提出了图像标题生成和OCR（光学字符识别，Optical Character Recognition）在基本研究思路，数据格式等方面的相似性。并对图像标题生成的现有技术进行分类、简述以及评价。然后，本文对本领域使用的数据集进行归纳和总结，根据前人经验，总结了现有数据的优缺点。最后，归纳了常用的多模态以及图像标题生成领域通用的评价指标。
+
+
+
+
+\acknowledgements
+
+这是中国科学院大学沈阳计算技术研究所2025届硕士课程自然语言处理的结课论文——关于图像内容描述的综述。
+
+感谢您阅读本文!
+
+\bibliography{iscv}
+
+
+\end{document}

@@ -1,0 +1,75 @@
+% File icdp2009.sty
+% This is the LaTeX style file for ICDP 2009.  It is adapted from the IE 2007 style.
+
+% July 24, 2009
+% Contact: simonnet@ecole.ensicaen.fr
+
+% September 03, 2009
+% version: 1.1
+% author: simonnet 
+% add command to have one or two affiliations  
+%
+% September 11, 2009
+% version: 1.2
+% author: simonnet 
+% enables to use \\ in the command \@authoraddr, so command is deprecated \secondauthoraddr
+%   
+
+\RequirePackage[b5paper,textwidth=14cm,textheight=20cm]{geometry}
+\RequirePackage[fontset=ubuntu,scheme=plain]{ctex}
+\RequirePackage{fontspec}
+\RequirePackage{newtxtext}
+\RequirePackage{graphicx}
+\RequirePackage{booktabs}
+\RequirePackage[inline]{enumitem}
+\RequirePackage{amsmath}
+\RequirePackage{amssymb}
+
+\DeclareOption{ENG}{
+    \ctexset{
+        abstractname = {Abstract},
+        bibname = {References}
+    }
+    \renewcommand{\abstract}{\section*{Abstract}}
+    \newcommand{\keywords}{\paragraph{Keywords:}}
+    \newcommand{\acknowledgements}{\section*{Acknowledgements}}
+}
+\DeclareOption{CHN}{
+    \ctexset{
+    abstractname = {摘要},
+    bibname = {参考文献},
+    figurename = {图},
+    tablename = {表}
+    }
+    \renewcommand{\abstract}{\section*{摘\quad 要}}
+    \newcommand{\keywords}{\paragraph{关键词:}}
+    \newcommand{\acknowledgements}{\section*{致\quad 谢}}
+}
+
+\DeclareOption*{\PackageWarning{examplepackage}{Unknown '\CurrentOption'}}
+\ProcessOptions\relax
+
+\setlength\columnsep{1.5em}
+\setlist{itemsep=0em,parsep=0em,topsep=.4em,partopsep=.2em}
+
+\flushbottom \twocolumn \sloppy %
+
+\makeatletter
+\def\@maketitle{%
+  \newpage
+  \null
+  \vspace*{-2em}%
+  \begin{center}%
+  \let \footnote \thanks
+    {\LARGE\bf \@title \par}%
+    \vskip 1.5em%
+    {\large
+      \lineskip .5em%
+      \begin{tabular}[t]{c}%
+        \@author
+      \end{tabular}\par}%
+    \vskip 1em%
+  \end{center}%
+  \par
+  \vskip 1.5em}
+\makeatother

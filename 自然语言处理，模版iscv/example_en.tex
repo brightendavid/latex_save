@@ -1,0 +1,134 @@
+\documentclass[10pt]{article}
+\usepackage[ENG]{iscv}
+\usepackage{capt-of}
+\usepackage{hologo}
+\bibliographystyle{ieeetr}
+
+\title{Template for ISCV}
+\author{First Author \and Second Author}
+\setcounter{page}{1}
+
+\begin{document}
+
+% \twocolumn[{%
+% \maketitle
+% \begin{center}
+%     \centering
+%     \includegraphics[width=.9\linewidth,height=4cm]{example-image-golden}
+%     \captionof{figure}{Teaser Image}
+% \end{center}%
+% }]
+\maketitle
+
+\abstract
+This is where the abstract should be placed. It should consist
+of one paragraph and a concise summary of the material
+discussed in the article below. It is preferable not to use
+footnotes in the abstract, the title or indeed anywhere in the paper. 
+The acknowledgement for funding organisations etc. is placed in 
+a separate section at the end of the text. We wish you success 
+with the preparation of your manuscript.
+
+\keywords
+Maximum 5 keywords placed before the abstract.
+
+\section{Introduction}
+With the ISCV package file, a computer running \LaTeX{} and a basic understanding of the \LaTeX{} language,
+an author should be able to produce professional quality typeset research papers with minimal effort.
+The purpose of this article is to serve as a user guide of the ISCV \LaTeX{} package file including
+the basic typesetting rules for ISCV journal.
+
+\section{Basic Usage}
+
+To start an article for ISCV, your tex file should begin with:
+\begin{verbatim}
+\documentclass[10pt]{article}
+\usepackage[ENG]{iscv}
+\end{verbatim}
+If your paper is mostly written in Chinese, you should use:
+\begin{verbatim}
+\usepackage[CHN]{iscv}
+\end{verbatim}
+You should use \hologo{XeLaTeX} to compile your paper to enable Chinese fonts. If you use Overleaf, simply set compiler to XeLaTeX in the project menu.
+
+\section{Manuscript preparation}
+Papers submitted for ISCV will be reviewed by the ISCV reviewer committee. All papers should be typed in either English or Chinese Mandarin.
+This instruction page is an example of the format and font sizes to be used. \LaTeX{} is preferred as an official template is available. 
+MS word users need to help themselves. 
+
+Three types of submissions can be accepted in ISCV:
+\begin{itemize}
+    \item Full Paper: At most 4 pages
+    \item Tech Report: At most 2 pages
+    \item Poster and Newsletter: 1 page
+\end{itemize}
+Figures and tables are included and references
+are excluded in page counts.  The authors may optionally submit supplementary materials, including videos, additional 
+figures or detailed analysis on the forum. Authors of accepted papers will be invited for presentations at the symposium. 
+
+All types of papers should fall within a frame of {14 cm $\times$ 20 cm} centred on a B5 page (17.6 cm $\times$ 24 cm). 
+Specifically, full papers and tech reports should be typed in two-columns. 
+
+\subsection{Figures and tables}
+Figures and tables should be centred in the column, numbered
+consecutively throughout the text, and each should have a
+caption underneath it (see for example Table~\ref{tab:example}). 
+Care should be taken that the lettering is not too small. 
+You can use \texttt{figure*} or \texttt{table*} to create two-column figures 
+or tables, which should be put on the top or bottom of each page.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=.5\linewidth]{figs/fig1.pdf}
+\caption{This is an example of a figure caption.} 
+\label{fig:example}
+\end{figure}
+
+\begin{table}[h]
+\centering\begin{tabular}{ccc}
+\toprule
+Net & top1 & top5 \\
+\midrule
+ResNet & 7\% & 5\% \\
+VGG & 10\% & 7\% \\
+ShuffleNet & 15\% & 10\% \\
+\bottomrule
+\end{tabular}
+\caption{This is an example of a table caption.}
+\label{tab:example}
+\end{table}
+
+\subsection{Equations}
+Equations should be typed within the text, centred, and should
+be numbered consecutively throughout the text. They should
+be referred to in the text as Equation (n). Their numbers
+should be typed in parentheses, flush right, as in the following
+example. You can use \verb|\eqref{eq:example}| to refer an equation, such as Eq.~\eqref{eq:example}.
+\begin{equation}
+\label{eq:example}
+	    PA + A'P - PBR^{-1}B'P + Q  =  0 \enspace.
+\end{equation}
+
+\section{Generating a {PDF} file}
+The PDF format will be the final format under which the
+papers will appear in the Proceedings. Therefore you are
+required to submit your paper as a PDF document. 
+
+Overleaf is recommended to process \LaTeX{} files.
+
+\section{Your References}
+The list of references should be ordered in the same order as
+first cited in the text. All references should be cited in the
+text, and using square brackets such as~\cite{ref01} and~\cite{ref01,ref02}. 
+
+\acknowledgements
+The acknowledgement for funding organisations etc. should
+be placed in a separate section at the end of the text.
+
+Thank you for your cooperation in complying with these
+instructions.
+
+\bibliography{iscv}
+
+
+\end{document}
