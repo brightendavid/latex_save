@@ -7,3 +7,7 @@
 # 结构
 
 * 自然语言处理课程的小综述，使用latex编写，用https://www.slager.link/#/home在线环境编写。基于ISCV论文模板
+
+* 数学分析，一些笔记
+
+  
